@@ -1,209 +1,188 @@
 <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moora Decision Making</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
 
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <title>Project</title>
-        <!-- menyisipkan bootstrap-->
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.21.1/babel.min.js"></script>
 
-        <style>
-            .jumbotron {
-                min-height: 370px;
+    <script type="text/babel">
+      const { useState } = React;
+
+      const MooraApp = () => {
+        const criteria = [
+          { name: 'lokasi', label: 'Lokasi yang Strategis' },
+          { name: 'jenisBarang', label: 'Jenis Barang yang Dijual' },
+          { name: 'kualitasLayanan', label: 'Kualitas Layanan' },
+          { name: 'kebersihan', label: 'Kebersihan' },
+          { name: 'keamanan', label: 'Keamanan' },
+          { name: 'ketersediaanParkir', label: 'Ketersediaan Parkir' },
+          { name: 'banyaknyaPembayaran', label: 'Banyaknya Metode Pembayaran' },
+          { name: 'jarakRumah', label: 'Jarak dari Rumah' },
+          { name: 'pajakPpn', label: 'Pajak PPN' },
+          { name: 'hargaParkir', label: 'Harga Parkir' },
+        ];
+
+        const [weights, setWeights] = useState({});
+        const [result, setResult] = useState([]);
+        const [alternatives] = useState(generateAlternatives());
+
+        const handleWeightChange = (e) => {
+          const { name, value } = e.target;
+          setWeights({ ...weights, [name]: value });
+        };
+
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          const weightedMatrix = calculateWeightedMatrix(alternatives, weights);
+          const finalRanking = calculateFinalRanking(weightedMatrix);
+          setResult(finalRanking);
+        };
+
+        function generateAlternatives() {
+          const alternatives = [];
+
+          for (let i = 0; i < 20; i++) {
+            const alternative = {};
+
+            for (const criterion of criteria) {
+              alternative[criterion.name] = Math.random() * (0.8 - 0.2) + 0.2;
             }
 
-            #headjumb{
-                text-align: center;
+            alternatives.push(alternative);
+          }
+
+          return alternatives;
+        }
+
+        function calculateWeightedMatrix(matrix, weights) {
+          const weightedMatrix = [];
+
+          for (const alternative of matrix) {
+            const weightedValues = {};
+
+            for (const key in alternative) {
+              weightedValues[key] = alternative[key] * weights[key];
             }
 
-            .map-container-2{
-                overflow:hidden;
-                padding-bottom:56.25%;
-                position:relative;
-                height:0;
-            }
-            
-            .map-container-2 iframe{
-                left:0;
-                top:0;
-                height:100%;
-                width:100%;
-                position:absolute;
-            }
+            weightedMatrix.push(weightedValues);
+          }
 
-            #map{
-              height: 400px;
-              /* The height is 400 pixels */
-              width: 89%;
-              /* The width is the width of the web page */
+          return weightedMatrix;
+        }
+
+        function calculateFinalRanking(matrix) {
+          const scores = [];
+
+          for (let i = 0; i < matrix.length; i++) {
+            const alternative = matrix[i];
+            let sumOfSquares = 0;
+
+            for (const key in alternative) {
+              sumOfSquares += alternative[key] * alternative[key];
             }
 
-        </style>
-        
-        <script>
-            // Initialize and add the map
-            function initMap() {
-              // The location
-              const loc = { lat: -7.954544797401729, lng: 112.63098851320835};
-              // The map, 
-              const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 4,
-                center: loc,
-              });
-              const marker = new google.maps.Marker({
-                position: loc,
-                map: map,
-              });
-            }
-          </script>
-    </head>
-    <body>
-        <div class="container">
-            <nav class="container-fluid pt-1 pl-5 pr-5 navbar navbar-expand-sm bg-dark navbar-dark fixed-top">
-                <ul class="navbar-nav">
-                  <li class="nav-item">
-                    <a class="navbar-brand" href="#"> <img src="img/ailogo.png" alt="Logo" style="width:35px;"></a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="#home">Home</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="#">Media</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="#contactus">Contact us</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="#">Order now</a>
-                  </li>
-                  <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" >
-                        Account
-                    </a>
-                <div class="dropdown-menu position-absolute dropdown-menu" aria-labelledby="navbarDropdown">
-                       <a class="dropdown-item" href="#" >Sign in</a>
-                       <a class="dropdown-item" href="#" >Sign up</a>
+            const score = Math.sqrt(sumOfSquares);
+            scores.push({ alternative: i + 1, score });
+          }
+
+          scores.sort((a, b) => b.score - a.score);
+
+          return scores;
+        }
+
+        return (
+          <div className="container">
+            <h1>Aplikasi Pengambilan Keputusan Moora</h1>
+            <form onSubmit={handleSubmit}>
+              <div className="row">
+                <div className="col-md-2">
+                  <h2>Bobot Kriteria</h2>
+                  {criteria.map((criterion, index) => (
+                    <div key={index} className="mb-3">
+                      <label htmlFor={criterion.name} className="form-label">
+                        {criterion.label}
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        id={criterion.name}
+                        name={criterion.name}
+                        className="form-control"
+                        value={weights[criterion.name] || ''}
+                        onChange={handleWeightChange}
+                      />
+                    </div>
+                  ))}
+                  <button type="submit" className="btn btn-primary">
+                    Hitung
+                  </button>
                 </div>
-                  </li>
-                </ul>
-            </nav>
-        </div>
-        
-        
-        <div class="container-full-bg" id="home">
-            <br><br>
-            <div class="container-fluid pt-5 pl-5 pr-5 jumbotron text-white jumbotron-image shadw " 
-            id="headjumb"
-            style="background-image: url(https://images.unsplash.com/photo-1552152974-19b9caf99137?fit=crop&w=1350&q=80);">
-                <br><br><br><br><br><br><br>
-                <h1 class="display-3">Get Your Design</h1>
-                <p class="lead">
-                    Order the design you want by clicking the button below.
-                </p>
-                <br>
-                <p><a class="btn btn-lg btn-success" href="#" role="button">Order now</a></p>
-            </div>
-        </div>
-        
-        <div class="container-fluid pt-1 pl-5 pr-5">
-
-            <br><br><br>
-
-            <div class="row" style="text-align: center;">
-                <div class="col">
-                    <h1 class="display-4">About Us</h1>
-                    <p class="lead"> AI is a studio that makes a redesign project that goes international for the industrial world.
-                        <br>
-                        We make designs on companies to enhance their brand to be more recognized by international customers. <br>
-                        We create simple but meaningful designs for your company brand.</p>
+                <div className="col-md-6">
+                  <h2>Data Alternatif</h2>
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        {criteria.map((criterion, index) => (
+                          <th key={index}>{criterion.name}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {alternatives.map((alternative, index) => (
+                        <tr key={index}>
+                          <td>{index + 1}</td>
+                          {criteria.map((criterion, i) => (
+                            <td key={i}>{alternative[criterion.name].toFixed(4)}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-            </div>
-            
-            <br><br><br><br><br><br><br><br>
+              </div>
+            </form>
+            {result.length > 0 && (
+              <div>
+                <h2>Hasil Perankingan Alternatif</h2>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>No.</th>
+                      <th>Alternatif</th>
+                      <th>Skor</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.map((ranking, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{`Alternatif ${ranking.alternative}`}</td>
+                        <td>{ranking.score.toFixed(4)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        );
+      };
 
-            <div class="row">
-                <div class="col-lg-6">
-                    <img class="img-responsive" src="img/intro2.PNG" alt="" width=500>
-                </div>
-        
-                <div class="col-lg-6">
-                    <br><br><br><br><br>
-                    <h1 class="display-4">We Redesign</h1>
-                        <p class="lead">
-                            In order to drive real interest around
-                            the brand, the visual identity must be
-                            applicable for any extensive rollout.
-                        </p>
-                </div>
-            </div>
-
-            <br><br><br><br>
-
-            <div class="row" style="text-align: center;">
-                <div class="col">
-                    <h1 class="display-4">Guiding your brand</h1>
-                    <p class="lead"> 
-                        This guide section will guide you through
-                        how to combine the key design
-                        elements of the system
-                        for miscellaneous uses
-                    </p>
-                </div>
-            </div>
-
-
-            <br><br>
-            
-        </div>
-
-        <div class="container-full-bg">
-            <br><br>
-            <div class="container-fluid pt-5 pl-5 pr-5 jumbotron text-white jumbotron-image shadw " 
-            id="headjumb"
-            style="background-image: url(https://images.unsplash.com/photo-1552152974-19b9caf99137?fit=crop&w=1350&q=80);">
-                <br><br><br><br><br><br><br>
-                <h1 class="display-3">Join Now</h1>
-                <p class="lead">
-                    Register now by clicking the button below.
-                </p>
-                <br>
-                <p><a class="btn btn-lg btn-success" href="#" role="button">Sign Up</a></p>
-                <br><br><br><br><br><br><br>
-            </div>
-        </div>
-
-        <footer class="footer container-fluid pt-1 pl-5 pr-5" id="contactus">
-            <div class="row">
-                <div class="col-lg-6">
-                    <br><br>
-                    
-                    <div id="map"></div>
-
-                    <script
-                    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6Qui_3fOACsAV_x0ueuxH0RCeVrhLhtE&callback=initMap&libraries=&v=weekly"
-                    async></script>
-
-                    <br><br><br><br><br>
-                </div>
-
-                <div class="col-lg-6">
-                    <br><br><br>
-                    <h1 class="display-5">Contact Us</h1>
-                        <p class="lead">
-                        We are in Indonesia, precisely in the city of Malang.
-                        <br>
-                        Please if you want to visit us in person
-                        <br><br>
-                        <br>
-                        Or Call 6281-XXXX-XXXX
-                        </p>
-                    <br><br><br><br><br>
-                </div>
-            </div>
-        </footer>
-    </body>
+      ReactDOM.createRoot(document.getElementById('root')).render(<MooraApp />);
+    </script>
+  </body>
 </html>
